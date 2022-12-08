@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment                                          # 1
+metadata:
+  name: santa-gift
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: santa-gift
+  replicas: 1                                             # 2
+  minReadySeconds: 150
+  strategy:
+    type: RollingUpdate                                   # 3
+    rollingUpdate:
+      maxUnavailable: 1                                   # 4
+      maxSurge: 1                                         # 5
+  template:                                               # 6
+    metadata:
+      labels:
+        app: santa-gift
+    spec:
+      containers:
+        - image: git-repo.kase.kz:5050/dit/dashboard/dashboard-ui:latest
+          imagePullPolicy: Always                         # 8
+          name: dashboard-ui
+          env:
+            - name: PROFILE
+              value: dev
+          ports:
+            - containerPort: 80
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "/bin/sh"
+                  - "-c"
+                  - "cp -r /usr/share/nginx/html/dev/* /usr/share/nginx/html/"
+      imagePullSecrets:
+        - name: regcred

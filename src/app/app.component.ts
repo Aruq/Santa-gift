@@ -8,6 +8,10 @@ import { HttpClient } from '@angular/common/http';
 export class AppComponent {
   constructor(private http:HttpClient){}
   title = 'santa-gift';
+  tin:string='Отправить';
+  onButtonClicked(){
+   this.tin='Отправлено'
+  }
   onSubmit(data: any){
     console.warn(data)
     this.http.post('http://192.168.211.75:8082/api/v1/secret-santa',data)

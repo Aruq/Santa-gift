@@ -1,11 +1,7 @@
 <style>
-  .body{
- width: 100%;
-position: relative;
-   
-  }
+
 h1{
-  color: red;
+  color: rgb(222, 66, 66);
   font-family:Brush Script MT;
   font-size: 70px;
   font-weight: 700;
@@ -23,12 +19,14 @@ h1{
     height: 970px;
     flex: 1 1 100%;
     box-sizing: border-box;
-    max-width: 100%;
+    min-width: 700px;
+
   }
+ 
   .form{
     display: flex;
     flex-direction:row;
-    gap:100px;
+    gap:170px;
   }
  
   h6{
@@ -39,7 +37,7 @@ h1{
   .input{
  
 padding: 6px;
-width: 250px;
+width: 350px;
 height: 30px;
 border: 1px solid #5B5B5B;
 border-radius: 8px;
@@ -63,7 +61,7 @@ margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     
-    color: rgb(153, 102, 102);
+    color: rgb(237, 148, 70);
     margin-bottom: 40px;
   }
   .title{
@@ -80,22 +78,55 @@ margin-bottom: 20px;
     font-weight: 700; 
   }
   button{
-
+cursor: pointer;
 width: 300px;
 height: 40px;
 
 font-size: 18px;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, monospace;
+font-family: Comic Sans MS;
     font-weight: 300;
     color: white;
 background:  #038726;;
 border: 1px solid rgba(91, 91, 91, 0.5);
 border-radius: 8px;
   }
+ 
   .inputForm{
-    font-size: 18px;
-    font-family: Florence;
+    font-size: 20px;
+    font-family: Comic Sans MS;
     font-weight: 300;
+    
+  }
+  @media screen and (max-width: 1140px) {
+    h1{
+      font-size: 55px;
+    }
+    button{
+      width: 150px;
+    }
+    .input{
+      width: 200px;
+      height: 20px;
+    }
+    .form{
+      gap: 40px;
+    }
+    .al{
+      display:flex;
+      font-size: 12px;
+      width: 620px;
+      align-items: center;
+      justify-content: center;
+    }
+    .inputForm{
+      font-size: 14px;
+    }
+    .title{
+      font-size: 14px;
+    }
+    .title1{
+      font-size: 28px;
+    }
   }
 </style>
 
@@ -109,10 +140,11 @@ border-radius: 8px;
  <form #userPost="ngForm" (ngSubmit)="onSubmit(userPost.value)" >
  <div class="form"><div class="inputForm"> <span>Напишите свое имя и фамилию</span><br><br>
 <input type="text" name="userName" ngModel  placeholder="Имя и фамилия" class="input"></div>
-<div class="inputForm"><span>Название подарка</span><br><br>
+<div class="inputForm"><span>Описание подарка</span><br><br>
 <input type="text" name="gift" ngModel placeholder="Подарок" class="input"></div></div>
-<div class="button"><button type="submit"  > Отправить</button></div>
+<div class="button"><button type="submit" (click)="onButtonClicked()" > {{tin}}</button></div>
 </form>
-<div><span class="al">Мы раздадим подарки во второй половине дня 30 декабря 2022 года в актовом зале.</span></div>
-<div><span class="al">Рекомендуемая текущая стоимость установлена в диапазоне от 1000 до 5000 тенге</span></div>
+<div><span class="al">Регистрация на участие принимается до 21.12.2022 года (включительно). 23.12.2022 к Вам придут Эльфы для жеребьевки. Всем новогоднего настроения!
+</span></div>
+<div><span class="al">Рекомендуемая текущая стоимость установлена в диапазоне от 3000 до 5000 тенге</span></div>
 </div>

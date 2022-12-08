@@ -1,0 +1,121 @@
+#image: docker:19.03.1
+
+stages:
+  - install
+  - ng build
+  - docker build
+  - deploy
+variables:
+  # When using dind service we need to instruct docker, to talk with the
+  # daemon started inside of the service. The daemon is available with
+  # a network connection instead of the default /var/run/docker.sock socket.
+  #
+  # The 'docker' hostname is the alias of the service container as described at
+  # https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#accessing-the-services
+  #
+  # Note that if you're using the Kubernetes executor, the variable should be set to
+  # tcp://localhost:2375/ because of how the Kubernetes executor connects services
+  # to the job container
+  # DOCKER_HOST: tcp://localhost:2375/
+  #
+  # For non-Kubernetes executors, we use tcp://docker:2375/
+  #DOCKER_HOST: tcp://docker:2375/
+  # When using dind, it's wise to use the overlayfs driver for
+  # improved performance.
+  #DOCKER_DRIVER: overlay2
+  #
+  # This will instruct Docker not to start over TLS.
+  DOCKER_TLS_CERTDIR: ""
+  #DOCKER_REGISTRY: "git-repo.kase.kz:5050"
+  DOCKER_REGISTRY: "git-repo.kase.kz"
+  SPRING_PROFILES_ACTIVE: gitlab-ci
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+
+  REGISTRY_URL: https://$DOCKER_REGISTRY:8443
+  IMAGE: $DOCKER_REGISTRY:8443/$DOCKER_USER/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME
+  RELEASE: $DOCKER_REGISTRY:8443/$DOCKER_USER/$CI_PROJECT_NAME:latest
+
+cache:
+  paths:
+    - node_modules
+    - dist/projects/
+
+
+
+install_dependencies:
+  when: manual
+  stage: install
+  image: node:16.15.0-alpine3.15
+  script:
+    - yarn cache clean
+    - yarn install
+  only:
+    - master
+  tags:
+    - bos
+
+ng-build:
+  stage: ng build
+  #image: node:14.19.1-alpine3.15
+  image: node:16.15.0-alpine3.15
+  script:
+    - yarn global add @angular/cli
+    - node --version
+    - yarn ng --version
+    - yarn ng build --output-path dist/projects
+  only:
+    - master
+  tags:
+    - bos
+
+
+docker-build:
+  stage: docker build
+  #when: manual
+  #image: docker:19.03.1
+  image: git-repo.kase.kz:5050/new-bos/docker-images/docker:19.03.1
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo $CI_REGISTRY_USER
+    - echo $CI_REGISTRY_PASSWORD
+    - echo $CI_REGISTRY
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
+  only:
+    - master
+  tags:
+    - bos
+
+k8s-deploy:
+  stage: deploy
+  when: manual
+  #image: cnych/kubectl
+  image: git-repo.kase.kz:5050/new-bos/docker-images/kubectl:cnych
+  script:
+    - kubectl apply -f deployment-dev.yml
+  only:
+    - master
+  tags:
+    - cluster
+
+k8s-set-image:
+  stage: deploy
+  #when: manual
+  #image: cnych/kubectl
+  image: git-repo.kase.kz:5050/new-bos/docker-images/kubectl:cnych
+  script:
+#    - mkdir -p ~/.kube && echo $KUBE_CONFIG | base64 -d >~/.kube/config
+#    - echo $KUBE_NAMESPACE
+#    - echo $KUBECONFIG
+    - kubectl set image deployments/dashboard-ui dashboard-ui=git-repo.kase.kz:5050/dit/dashboard/dashboard-ui:$CI_COMMIT_SHA --namespace default
+  only:
+    - master
+  tags:
+    - cluster
+
+
